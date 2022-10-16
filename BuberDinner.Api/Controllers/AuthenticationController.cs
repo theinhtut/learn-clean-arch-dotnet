@@ -19,17 +19,16 @@ public class AuthenticationController : ControllerBase
     [HttpPost("register")]
     public IActionResult Register(RegisterRequest request)
     {
-        System.Diagnostics.Debug.WriteLine(request);
         var authResult = _authenticationService.Register(
             request.FirstName,
             request.LastName,
             request.Email,
             request.Password);
         var response = new AuthenticationResponse(
-            authResult.id,
-            authResult.FirstName,
-            authResult.LastName,
-            authResult.Email,
+            authResult.User.Id,
+            authResult.User.FirstName,
+            authResult.User.LastName,
+            authResult.User.Email,
             authResult.Token);
 
         return Ok(response);
@@ -42,10 +41,10 @@ public class AuthenticationController : ControllerBase
             request.Email,
             request.Password);
         var response = new AuthenticationResponse(
-            authResult.id,
-            authResult.FirstName,
-            authResult.LastName,
-            authResult.Email,
+            authResult.User.Id,
+            authResult.User.FirstName,
+            authResult.User.LastName,
+            authResult.User.Email,
             authResult.Token);
 
         return Ok(response);
