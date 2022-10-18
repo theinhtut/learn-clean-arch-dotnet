@@ -1,5 +1,7 @@
-﻿using BuberDinner.Application.Services.Authentication;
+﻿using BuberDinner.Application.Common.Errors;
+using BuberDinner.Application.Services.Authentication;
 using BuberDinner.Contracts.Authentication;
+using ErrorOr;
 //using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,19 +21,48 @@ public class AuthenticationController : ControllerBase
     [HttpPost("register")]
     public IActionResult Register(RegisterRequest request)
     {
-        var authResult = _authenticationService.Register(
+        ErrorOr<AuthenticationResult> authResult = _authenticationService.Register(
             request.FirstName,
             request.LastName,
             request.Email,
             request.Password);
-        var response = new AuthenticationResponse(
+
+        return authResult.MatchFirst(
+            authResult => Ok(MapAuthResult(authResult)),
+            firstError => Problem(statusCode: StatusCodes.Status409Conflict, title: firstError.Description));
+        //if (registerResult.IsSuccess) 
+        //{
+        //    return Ok(MapAuthResult(registerResult.Value));
+        //}
+        //var firstError = registerResult.Errors[0];
+
+        //if (firstError is DuplicateEmailError)
+        //{
+        //    return Problem(statusCode: StatusCodes.Status409Conflict, detail: "Email already exists.");
+        //}
+
+        //return Problem();
+        //return registerResult.Match(
+        //    authResult => Ok(MapAuthResult(authResult)),
+        //    _ => Problem(statusCode: StatusCodes.Status409Conflict, title: "Email already exists."));
+
+        //if (registerResult.IsT0)
+        //{
+        //    var authResult = registerResult.AsT0;
+        //    AuthenticationResponse response = MapAuthResult(authResult);
+        //    return Ok(response);
+        //}
+        //return Problem(statusCode: StatusCodes.Status409Conflict, title: "Email already exists.");
+    }
+
+    private static AuthenticationResponse MapAuthResult(AuthenticationResult authResult)
+    {
+        return new AuthenticationResponse(
             authResult.User.Id,
             authResult.User.FirstName,
             authResult.User.LastName,
             authResult.User.Email,
             authResult.Token);
-
-        return Ok(response);
     }
 
     [HttpPost("login")]
